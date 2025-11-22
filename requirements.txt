@@ -1,4 +1,5 @@
 torch>=1.10
+torchvision
 pyyaml
 numpy
 Pillow

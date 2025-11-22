@@ -1,17 +1,26 @@
-import numpy as np
+# filepath: data/dataset_demo.py
+import torch
 from torch.utils.data import Dataset
+from torchvision import datasets, transforms
 
-class DummyImageDataset(Dataset):
-    """Random images 64x64x3 and scalar reward (for demo)."""
-    def __init__(self, size=1000, img_size=64, seed=0):
-        self.rng = np.random.RandomState(seed)
-        self.size = size
-        self.img_size = img_size
+class CIFAR10Dataset(Dataset):
+    def __init__(self, train=True):
+        self.transform = transforms.Compose([
+            transforms.Resize((64, 64)),
+            transforms.ToTensor()
+        ])
+        self.dataset = datasets.CIFAR10(
+            root="data/processed",
+            train=train,
+            download=True,
+            transform=self.transform
+        )
 
     def __len__(self):
-        return self.size
+        return len(self.dataset)
 
     def __getitem__(self, idx):
-        img = (self.rng.rand(self.img_size, self.img_size, 3) * 255).astype('uint8')
-        reward = float(self.rng.rand() * 2 - 1)
-        return img, reward
+        img, label = self.dataset[idx]
+        # Convert to numpy uint8 for compatibility with Agent
+        img_np = (img.permute(1,2,0).numpy() * 255).astype('uint8')
+        return img_np, label

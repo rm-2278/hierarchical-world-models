@@ -10,7 +10,7 @@ sys.path.insert(0, SRC_DIR)
 sys.path.insert(0, PROJECT_ROOT)
 
 from models.model_demo import Agent
-from data.dataset_demo import DummyImageDataset
+from data.dataset_demo import CIFAR10Dataset
 
 def load_cfg(path):
     with open(path, 'r') as f:
@@ -25,7 +25,7 @@ def train(cfg_path=None):
                   latent_dim=cfg.get('latent_dim', 128),
                   action_dim=cfg.get('action_dim', 4))
 
-    dataset = DummyImageDataset(size=cfg.get('dataset_size', 500), img_size=cfg.get('img_size', 64))
+    dataset = CIFAR10Dataset(train=True)
     loader = DataLoader(dataset, batch_size=cfg.get('batch_size', 64), shuffle=True, num_workers=0)
 
     params = list(agent.encoder.parameters()) + list(agent.decoder.parameters())
@@ -35,7 +35,7 @@ def train(cfg_path=None):
     out_dir = cfg.get('out_dir', os.path.join(PROJECT_ROOT, "experiments", "results", "demo_run"))
     os.makedirs(out_dir, exist_ok=True)
 
-    for epoch in range(cfg.get('epochs', 3)):
+    for epoch in range(cfg.get('epochs', 10)): # Default to 10 epochs
         total = 0.0
         agent.encoder.train(); agent.decoder.train()
         for imgs, _ in loader:

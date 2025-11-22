@@ -61,12 +61,14 @@ shiropa-uk, t-yamada02, ziwoo3244
 ## 使い方
 
 ### 環境セットアップ
-
+```bash
     pip install -r requirements.txt
+```
 
 ### コードの実行
-
+```bash
     python experiments/scripts/run_experiment.py --config experiments/configs/example.yaml
+```
 
 ### モデル再現
 

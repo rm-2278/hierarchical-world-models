@@ -89,12 +89,9 @@ class Agent:
         x = obs.astype(np.float32) / (255.0 if was_uint8 else 1.0)
         x = torch.as_tensor(x, device=self.device).permute(2, 0, 1).unsqueeze(0)  # (1,C,H,W)
         
-        if eval:
-            with torch.no_grad():
-                z = self.encoder(x)
-                action = self.actor(z)
-                recon = self.decoder(z)
-        else:
+        # Use no_grad context only in eval mode
+        context = torch.no_grad() if eval else torch.enable_grad()
+        with context:
             z = self.encoder(x)
             action = self.actor(z)
             recon = self.decoder(z)

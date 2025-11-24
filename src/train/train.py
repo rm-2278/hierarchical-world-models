@@ -1,5 +1,7 @@
 import os, sys, yaml
 import torch
+import numpy as np
+import random
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
@@ -23,8 +25,6 @@ def train(cfg_path=None):
     # Set seeds for reproducibility
     seed = cfg.get('seed', 0)
     torch.manual_seed(seed)
-    import numpy as np
-    import random
     np.random.seed(seed)
     random.seed(seed)
     if torch.cuda.is_available():

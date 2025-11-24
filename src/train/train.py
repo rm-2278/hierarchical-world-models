@@ -1,5 +1,9 @@
-import os, sys, yaml
+import os
+import sys
+import yaml
 import torch
+import numpy as np
+import random
 from torch import nn, optim
 from torch.utils.data import DataLoader
 
@@ -19,14 +23,24 @@ def load_cfg(path):
 def train(cfg_path=None):
     cfg_path = cfg_path or os.path.join(PROJECT_ROOT, "experiments", "configs", "demo.yaml")
     cfg = load_cfg(cfg_path)
+    
+    # Set seeds for reproducibility
+    seed = cfg.get('seed', 0)
+    torch.manual_seed(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    if torch.cuda.is_available():
+        torch.cuda.manual_seed(seed)
+        torch.cuda.manual_seed_all(seed)
+    
     device = torch.device("cuda" if torch.cuda.is_available() and cfg.get("use_cuda", True) else "cpu")
 
     agent = Agent(device=device,
                   latent_dim=cfg.get('latent_dim', 128),
                   action_dim=cfg.get('action_dim', 4))
 
-    dataset = CIFAR10Dataset(train=True)
-    loader = DataLoader(dataset, batch_size=cfg.get('batch_size', 64), shuffle=True, num_workers=0)
+    dataset = CIFAR10Dataset(train=True, img_size=cfg.get('img_size', 64))
+    loader = DataLoader(dataset, batch_size=cfg.get('batch_size', 64), shuffle=True, num_workers=cfg.get('num_workers', 0))
 
     params = list(agent.encoder.parameters()) + list(agent.decoder.parameters())
     optim_w = optim.Adam(params, lr=cfg.get('lr', 1e-3))
@@ -39,8 +53,7 @@ def train(cfg_path=None):
         total = 0.0
         agent.encoder.train(); agent.decoder.train()
         for imgs, _ in loader:
-            imgs_f = imgs.float() / 255.0
-            imgs_t = imgs_f.permute(0,3,1,2).to(device)
+            imgs_t = imgs.float().permute(0,3,1,2).to(device)
             z = agent.encoder(imgs_t)
             recon = agent.decoder(z)
             loss = mse(recon, imgs_t)

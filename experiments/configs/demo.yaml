@@ -4,7 +4,7 @@ action_dim: 4
 img_size: 64
 batch_size: 64
 lr: 0.001
-epochs: 20
+epochs: 50
 out_dir: experiments/results/demo_run
 seed: 0
 num_workers: 0

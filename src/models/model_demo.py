@@ -88,10 +88,17 @@ class Agent:
         was_uint8 = obs.dtype == np.uint8
         x = obs.astype(np.float32) / (255.0 if was_uint8 else 1.0)
         x = torch.as_tensor(x, device=self.device).permute(2, 0, 1).unsqueeze(0)  # (1,C,H,W)
-        with torch.no_grad():
+        
+        if eval:
+            with torch.no_grad():
+                z = self.encoder(x)
+                action = self.actor(z)
+                recon = self.decoder(z)
+        else:
             z = self.encoder(x)
             action = self.actor(z)
             recon = self.decoder(z)
+            
         action_np = action.squeeze(0).cpu().numpy()
         recon_np = recon.squeeze(0).permute(1,2,0).cpu().numpy()
         return action_np, recon_np

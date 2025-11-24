@@ -1,6 +1,7 @@
 import numpy as np
 import torch
 from torch import nn
+from contextlib import nullcontext
 
 class SimpleEncoder(nn.Module):
     """
@@ -90,7 +91,7 @@ class Agent:
         x = torch.as_tensor(x, device=self.device).permute(2, 0, 1).unsqueeze(0)  # (1,C,H,W)
         
         # Use no_grad context only in eval mode
-        context = torch.no_grad() if eval else torch.enable_grad()
+        context = torch.no_grad() if eval else nullcontext()
         with context:
             z = self.encoder(x)
             action = self.actor(z)

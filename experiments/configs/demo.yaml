@@ -1,0 +1,10 @@
+use_cuda: true
+latent_dim: 128
+action_dim: 4
+img_size: 64
+batch_size: 64
+lr: 0.001
+epochs: 50
+out_dir: experiments/results/demo_run
+seed: 0
+num_workers: 0

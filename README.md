@@ -30,7 +30,7 @@ shiropa-uk, t-yamada02, ziwoo3244
  │   └─ `utils/`            -- log, checkpoint, seed, config loaderなど\
  │\
  ├─ `tests/`\
- │   └─ ...                -- テストコード (utnit / smoke)\
+ │   └─ ...                -- テストコード (unit / smoke)\
  │\
  ├─ `data/`\
  │   ├─ `raw/`               -- 生データ（git管理しない）\
@@ -51,13 +51,6 @@ shiropa-uk, t-yamada02, ziwoo3244
  ├─ `pyproject.toml`\
  └─ `.gitignore`             -- プッシュしないフォルダ・ファイルを定義\
 
-
-
--   `experiments/` -- configs, results, experiment scripts\
--   `tests/` -- unit and smoke tests\
--   `docker/` -- environment setup\
--   `scripts/` -- utility scripts
-
 ## 使い方
 
 ### 環境セットアップ
@@ -67,7 +60,7 @@ shiropa-uk, t-yamada02, ziwoo3244
 
 ### コードの実行
 ```bash
-    python experiments/scripts/run_experiment.py --config experiments/configs/example.yaml
+    python experiments/scripts/run_demo.py --config experiments/configs/demo.yaml
 ```
 
 ### モデル再現

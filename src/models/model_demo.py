@@ -1,9 +1,13 @@
 import numpy as np
 import torch
 from torch import nn
-import torch.nn.functional as F
 
 class SimpleEncoder(nn.Module):
+    """
+    Encoder for 64x64 images. 
+    Produces 8x8 feature maps after 3 stride-2 convolutions (64→32→16→8).
+    For different input sizes, adjust the fc layer accordingly.
+    """
     def __init__(self, latent_dim=128):
         super().__init__()
         self.conv = nn.Sequential(
@@ -71,6 +75,16 @@ class Agent:
         return agent
 
     def __call__(self, obs: np.ndarray, eval: bool = True):
+        # Set modules to eval or train mode based on the eval flag
+        if eval:
+            self.encoder.eval()
+            self.decoder.eval()
+            self.actor.eval()
+        else:
+            self.encoder.train()
+            self.decoder.train()
+            self.actor.train()
+            
         was_uint8 = obs.dtype == np.uint8
         x = obs.astype(np.float32) / (255.0 if was_uint8 else 1.0)
         x = torch.as_tensor(x, device=self.device).permute(2, 0, 1).unsqueeze(0)  # (1,C,H,W)

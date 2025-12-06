@@ -1,0 +1,7 @@
+model:
+  kind: tdmpc2
+  # TODO: provide full TD-MPC2 hyperparameters.
+  # Reference: third_party/tdmpc2/tdmpc2/config.yaml
+
+training:
+  device: auto

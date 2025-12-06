@@ -1,0 +1,7 @@
+model:
+  kind: dreamerv3
+  # TODO: fill with obs_space/act_space definitions and DreamerV3 hyperparameters.
+  # See third_party/dreamerv3/dreamerv3/configs.yaml for reference.
+
+training:
+  device: auto

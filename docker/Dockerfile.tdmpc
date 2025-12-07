@@ -1,44 +1,32 @@
-# 1. Base image with Nightly PyTorch (Needed for sm_120/Blackwell)
-FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-runtime
+# TDMPC2 Docker Image
+# Uses PyTorch base image with CUDA 12.4 support for modern GPUs
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 
 WORKDIR /workspace
 
-# 2. Install System Dependencies
-# TDMPC2 (like Dreamer) usually needs these for DMControl/rendering
+# Install system dependencies for rendering and visualization
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libgl1-mesa-glx \
+    libglew-dev \
+    x11-xserver-utils \
+    xvfb \
     git \
+    vim \
     && rm -rf /var/lib/apt/lists/*
 
-# 3. Copy Repo
+# Copy repository
 COPY . .
 
-# 4. Handle PyTorch Nightly Upgrade
-# Uninstall stable -> Install Nightly
-RUN pip uninstall -y torch torchvision torchaudio && \
-    pip install --pre torch torchvision torchaudio --index-url https://download.pytorch.org/whl/nightly/cu126
+# Install project dependencies
+RUN pip install --upgrade pip && \
+    pip install --root-user-action=ignore -r requirements.txt
 
-# 5. Install Dependencies (DreamerV3 Style)
-RUN pip install --upgrade pip
+# Patch legacy torch.nn.Buffer usage for modern PyTorch (CRITICAL)
+COPY docker/scripts/patch_buffer_docker.sh /tmp/patch_buffer.sh
+RUN chmod +x /tmp/patch_buffer.sh && /tmp/patch_buffer.sh
 
-# A. Root requirements
-RUN pip install --root-user-action=ignore -r requirements.txt
-
-# B. Third-party requirements 
-# (Assuming tdmpc2 has a requirements file, similar to the Dreamer example)
-RUN if [ -f "third_party/tdmpc2/requirements.txt" ]; then \
-        pip install --root-user-action=ignore -r third_party/tdmpc2/requirements.txt; \
-    fi
-
-# 6. Install the Third-Party Library itself (Optional but recommended)
-# This allows you to import tdmpc2 cleanly in python scripts
-RUN pip install -e third_party/tdmpc2
-
-# 7. Patch Legacy Code for PyTorch Nightly (CRITICAL)
-# Since you are using Nightly, you must patch the older TDMPC2 code
-# to replace removed features like torch.nn.Buffer
-RUN sed -i 's/from torch.nn import Buffer/Buffer = torch.nn.Parameter/' third_party/tdmpc2/tdmpc2/common/scale.py && \
-    sed -i 's/self._prev_mean = torch.nn.Buffer(/self.register_buffer("_prev_mean", /' third_party/tdmpc2/tdmpc2/tdmpc2.py
+# Set environment variables for GPU rendering
+ENV MUJOCO_GL=egl
 
 CMD ["/bin/bash"]

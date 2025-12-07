@@ -1,24 +1,44 @@
-# Switch to NVIDIA NGC base image
-# This comes with PyTorch pre-compiled for the latest architectures (sm_120)
-FROM nvcr.io/nvidia/pytorch:25.11-py3
+# DreamerV3 Docker Image
+# Uses PyTorch base image with CUDA 12.4 support for modern GPUs
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 
 WORKDIR /workspace
 
+# Install system dependencies for rendering and visualization
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libgl1-mesa-glx \
+    libglew-dev \
+    x11-xserver-utils \
+    xvfb \
+    wget \
+    git \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy repository
 COPY . .
 
-# CRITICAL: Prevent pip from downgrading PyTorch.
-# The NGC image already has the perfect version of torch installed.
-# We remove 'torch', 'torchvision', etc. from requirements.txt before installing.
-RUN sed -i '/torch/d' requirements.txt && \
-    pip install --upgrade pip && \
-    pip install --root-user-action=ignore -r requirements.txt
+# Install JAX with CUDA 12 support (required for DreamerV3)
+# This must be done before installing dreamerv3 requirements to ensure compatibility
+RUN pip install --upgrade pip && \
+    pip install --root-user-action=ignore "jax[cuda12]==0.4.33" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
 
-# Install CUDA-enabled JAX so the Dreamer GPU smoke test can run
-RUN pip install --root-user-action=ignore -U "jax[cuda12]" \
-    -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+# Install DreamerV3 dependencies
+RUN if [ -f "third_party/dreamerv3/requirements.txt" ]; then \
+        pip install --root-user-action=ignore -r third_party/dreamerv3/requirements.txt; \
+    fi
 
-# Patch legacy Buffer usages (still needed for TDMPC2 compatibility)
-RUN sed -i 's/from torch.nn import Buffer/Buffer = torch.nn.Parameter/' third_party/tdmpc2/tdmpc2/common/scale.py && \
-    sed -i 's/self._prev_mean = torch.nn.Buffer(/self.register_buffer("_prev_mean", /' third_party/tdmpc2/tdmpc2/tdmpc2.py
+# Install project dependencies
+RUN pip install --root-user-action=ignore -r requirements.txt
+
+# Install DreamerV3 package in editable mode
+RUN if [ -f "third_party/dreamerv3/setup.py" ]; then \
+        pip install --root-user-action=ignore -e third_party/dreamerv3; \
+    fi
+
+# Set environment variables for GPU rendering
+ENV MUJOCO_GL=egl
+ENV XLA_PYTHON_CLIENT_PREALLOCATE=false
 
 CMD ["/bin/bash"]

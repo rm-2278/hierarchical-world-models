@@ -2,7 +2,7 @@
 
 ## GitHub
 
-### 
+### ブランチ戦略
 - `main`: 常に論文・公開可能な最終コードのみ
 - `develop`: 統合ブランチ
 - `feature/<name>`ブランチで開発をします。
@@ -27,11 +27,10 @@
 - 開発が本格化したら、Issuesでタスク管理をします。
 - test
 
-## 
+## ドキュメントとコードの整理
 
 - docsに報告資料を集約します
 - srcに純粋なコードをまとめます。
-
--   Use feature branches
--   Submit PRs to `develop`
--   Follow templates under `.github/`
+- 開発にはfeatureブランチを使用してください
+- プルリクエストは`develop`ブランチへ提出してください
+- `.github/`配下のテンプレートに従ってください

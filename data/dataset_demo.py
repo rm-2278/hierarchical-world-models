@@ -1,12 +1,11 @@
 # filepath: data/dataset_demo.py
-import torch
 from torch.utils.data import Dataset
 from torchvision import datasets, transforms
 
 class CIFAR10Dataset(Dataset):
-    def __init__(self, train=True):
+    def __init__(self, train=True, img_size=64):
         self.transform = transforms.Compose([
-            transforms.Resize((64, 64)),
+            transforms.Resize((img_size, img_size)),
             transforms.ToTensor()
         ])
         self.dataset = datasets.CIFAR10(
@@ -21,6 +20,6 @@ class CIFAR10Dataset(Dataset):
 
     def __getitem__(self, idx):
         img, label = self.dataset[idx]
-        # Convert to numpy uint8 for compatibility with Agent
-        img_np = (img.permute(1,2,0).numpy() * 255).astype('uint8')
+        # Return tensor in [0, 1] range as (H, W, C) for compatibility
+        img_np = img.permute(1, 2, 0).numpy()
         return img_np, label

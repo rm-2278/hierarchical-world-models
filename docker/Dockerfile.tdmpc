@@ -1,6 +1,6 @@
 # TDMPC2 Docker Image
-# Uses NVIDIA PyTorch base image with CUDA 12.4 support for modern GPUs
-FROM nvcr.io/nvidia/pytorch:24.11-py3
+# Uses PyTorch base image with CUDA 12.4 support for modern GPUs
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 
 WORKDIR /workspace
 
@@ -18,9 +18,8 @@ RUN apt-get update && apt-get install -y \
 # Copy repository
 COPY . .
 
-# Install project dependencies (excluding torch to preserve NGC version)
-RUN sed -i '/^torch/d' requirements.txt && \
-    pip install --upgrade pip && \
+# Install project dependencies
+RUN pip install --upgrade pip && \
     pip install --root-user-action=ignore -r requirements.txt
 
 # Patch legacy torch.nn.Buffer usage for modern PyTorch (CRITICAL)

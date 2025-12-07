@@ -1,6 +1,6 @@
 # Hierarchical World Models Docker Image
-# Uses NVIDIA PyTorch base image with CUDA 12.4 support for modern GPUs
-FROM nvcr.io/nvidia/pytorch:24.11-py3
+# Uses PyTorch base image with CUDA 12.4 support for modern GPUs
+FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
 
 WORKDIR /workspace
 
@@ -28,9 +28,8 @@ RUN if [ -f "third_party/dreamerv3/requirements.txt" ]; then \
         pip install --root-user-action=ignore -r third_party/dreamerv3/requirements.txt; \
     fi
 
-# Install project dependencies (excluding torch to preserve NGC version)
-RUN sed -i '/^torch/d' requirements.txt && \
-    pip install --root-user-action=ignore -r requirements.txt
+# Install project dependencies
+RUN pip install --root-user-action=ignore -r requirements.txt
 
 # Install third-party packages in editable mode
 RUN if [ -f "third_party/dreamerv3/setup.py" ]; then \

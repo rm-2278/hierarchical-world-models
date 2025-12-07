@@ -1,29 +1,55 @@
-# Option B: Use CUDA 12.4 (Works on RTX 5070 Ti via backward compatibility)
-FROM pytorch/pytorch:2.4.0-cuda12.4-cudnn9-runtime
+# General Docker Image for Hierarchical World Models
+# Uses NVIDIA PyTorch base image with CUDA 12.4 support
+FROM nvcr.io/nvidia/pytorch:24.11-py3
 
 WORKDIR /workspace
 
-# 1. Install system dependencies often needed by DreamerV3 (ffmpeg, etc)
+# Install system dependencies for rendering and visualization
 RUN apt-get update && apt-get install -y \
     ffmpeg \
     libgl1-mesa-glx \
+    libglew-dev \
+    x11-xserver-utils \
+    xvfb \
+    wget \
+    git \
+    vim \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Install Dreamer requirements FIRST
-# This lets Dreamer pick the older JAX version it wants (e.g. 0.4.x)
-COPY third_party/dreamerv3/env/requirements.txt /tmp/dreamer_reqs.txt
-RUN pip install --root-user-action=ignore -r /tmp/dreamer_reqs.txt
-
-# 3. OVERRIDE with the specific JAX Cuda 12 wheel
-# Dreamer's reqs might install CPU-only JAX by mistake. This forces GPU support.
-# We pin jax to 0.4.26 or 0.4.30 which are stable for Dreamer.
-RUN pip install --upgrade --root-user-action=ignore \
-  "jax[cuda12_pip]==0.4.26" \
-  -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
-
-COPY requirements.txt .
-RUN pip install --upgrade pip && pip install --root-user-action=ignore -r requirements.txt
-
+# Copy repository
 COPY . .
+
+# Install JAX with CUDA 12 support (for DreamerV3 compatibility)
+RUN pip install --upgrade pip && \
+    pip install --root-user-action=ignore "jax[cuda12]==0.4.33" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+# Install DreamerV3 dependencies if present
+RUN if [ -f "third_party/dreamerv3/requirements.txt" ]; then \
+        pip install --root-user-action=ignore -r third_party/dreamerv3/requirements.txt; \
+    fi
+
+# Install project dependencies (excluding torch to preserve NGC version)
+RUN sed -i '/^torch/d' requirements.txt && \
+    pip install --root-user-action=ignore -r requirements.txt
+
+# Install third-party packages in editable mode
+RUN if [ -f "third_party/dreamerv3/setup.py" ]; then \
+        pip install --root-user-action=ignore -e third_party/dreamerv3; \
+    fi
+
+# Patch legacy torch.nn.Buffer usage for TDMPC2 (CRITICAL for PyTorch 2.0+)
+RUN if [ -f "third_party/tdmpc2/tdmpc2/common/scale.py" ]; then \
+        sed -i 's/from torch.nn import Buffer/# Buffer removed in PyTorch 2.0+/' third_party/tdmpc2/tdmpc2/common/scale.py && \
+        sed -i 's/self.value = Buffer(/self.register_buffer("value", /' third_party/tdmpc2/tdmpc2/common/scale.py && \
+        sed -i 's/self._percentiles = Buffer(/self.register_buffer("_percentiles", /' third_party/tdmpc2/tdmpc2/common/scale.py; \
+    fi
+
+RUN if [ -f "third_party/tdmpc2/tdmpc2/tdmpc2.py" ]; then \
+        sed -i 's/self._prev_mean = torch.nn.Buffer(/self.register_buffer("_prev_mean", /' third_party/tdmpc2/tdmpc2/tdmpc2.py; \
+    fi
+
+# Set environment variables for GPU rendering
+ENV MUJOCO_GL=egl
+ENV XLA_PYTHON_CLIENT_PREALLOCATE=false
 
 CMD ["/bin/bash"]

@@ -50,21 +50,25 @@ echo "========================================="
 
 # Build TDMPC2 image (simpler, no JAX)
 print_info "Building TDMPC2 image..."
-if docker build -f docker/Dockerfile.tdmpc -t hwm-tdmpc:test . > /tmp/build_tdmpc.log 2>&1; then
+BUILD_LOG_TDMPC=$(mktemp)
+if docker build -f docker/Dockerfile.tdmpc -t hwm-tdmpc:test . > "$BUILD_LOG_TDMPC" 2>&1; then
     print_status "TDMPC2 image built successfully"
+    rm -f "$BUILD_LOG_TDMPC"
 else
-    print_error "Failed to build TDMPC2 image. Check /tmp/build_tdmpc.log for details"
-    tail -50 /tmp/build_tdmpc.log
+    print_error "Failed to build TDMPC2 image. Check $BUILD_LOG_TDMPC for details"
+    tail -50 "$BUILD_LOG_TDMPC"
     exit 1
 fi
 
 # Build DreamerV3 image
 print_info "Building DreamerV3 image..."
-if docker build -f docker/Dockerfile.dreamer -t hwm-dreamer:test . > /tmp/build_dreamer.log 2>&1; then
+BUILD_LOG_DREAMER=$(mktemp)
+if docker build -f docker/Dockerfile.dreamer -t hwm-dreamer:test . > "$BUILD_LOG_DREAMER" 2>&1; then
     print_status "DreamerV3 image built successfully"
+    rm -f "$BUILD_LOG_DREAMER"
 else
-    print_error "Failed to build DreamerV3 image. Check /tmp/build_dreamer.log for details"
-    tail -50 /tmp/build_dreamer.log
+    print_error "Failed to build DreamerV3 image. Check $BUILD_LOG_DREAMER for details"
+    tail -50 "$BUILD_LOG_DREAMER"
     exit 1
 fi
 

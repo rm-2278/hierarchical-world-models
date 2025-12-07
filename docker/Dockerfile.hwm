@@ -37,15 +37,8 @@ RUN if [ -f "third_party/dreamerv3/setup.py" ]; then \
     fi
 
 # Patch legacy torch.nn.Buffer usage for TDMPC2 (CRITICAL for PyTorch 2.0+)
-RUN if [ -f "third_party/tdmpc2/tdmpc2/common/scale.py" ]; then \
-        sed -i 's/from torch.nn import Buffer/# Buffer removed in PyTorch 2.0+/' third_party/tdmpc2/tdmpc2/common/scale.py && \
-        sed -i 's/self.value = Buffer(/self.register_buffer("value", /' third_party/tdmpc2/tdmpc2/common/scale.py && \
-        sed -i 's/self._percentiles = Buffer(/self.register_buffer("_percentiles", /' third_party/tdmpc2/tdmpc2/common/scale.py; \
-    fi
-
-RUN if [ -f "third_party/tdmpc2/tdmpc2/tdmpc2.py" ]; then \
-        sed -i 's/self._prev_mean = torch.nn.Buffer(/self.register_buffer("_prev_mean", /' third_party/tdmpc2/tdmpc2/tdmpc2.py; \
-    fi
+COPY docker/scripts/patch_buffer_docker.sh /tmp/patch_buffer.sh
+RUN chmod +x /tmp/patch_buffer.sh && /tmp/patch_buffer.sh
 
 # Set environment variables for GPU rendering
 ENV MUJOCO_GL=egl

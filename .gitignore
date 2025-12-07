@@ -3,6 +3,9 @@ __pycache__/
 *.pyc
 *.pyo
 *.pyd
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
 
 # Jupyter Notebook checkpoints
 .ipynb_checkpoints/
@@ -16,6 +19,12 @@ __pycache__/
 venv/
 env/
 *.env
+third_party/**/.venv/
+third_party/**/env/.venv/
+third_party/**/env/.mamba/
+third_party/**/env/.pixi/
+third_party/**/env/conda-meta/
+third_party/**/env/pip-wheel-metadata/
 
 # OS generated files
 .DS_Store

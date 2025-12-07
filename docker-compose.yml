@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+  dreamer:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.dreamer
+    image: hwm-dreamer
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+
+  tdmpc:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.tdmpc
+    image: hwm-tdmpc
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - .:/workspace
+    working_dir: /workspace
+
+  hwm:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.hwm
+    image: hwm-hwm
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    volumes:
+      - .:/workspace
+    working_dir: /workspace

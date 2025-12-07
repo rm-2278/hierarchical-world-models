@@ -1,6 +1,12 @@
-torch>=1.10
-torchvision
+torch>=2.0
+torchvision>=0.15
 pyyaml
-numpy
+numpy<2
 Pillow
 pytest
+
+# TD-MPC2 needs tensordict/torchrl stack
+tensordict
+
+# Optional: full DreamerV3 stack (heavy, JAX/CUDA). Install when using DreamerV3.
+# -r third_party/dreamerv3/env/requirements.txt

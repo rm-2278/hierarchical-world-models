@@ -1,0 +1,33 @@
+# Hierarchical World Models Docker Image
+# Uses PyTorch base image with CUDA 13 support for modern GPUs
+FROM pytorch/pytorch:2.9.1-cuda13.0-cudnn9-runtime
+
+WORKDIR /workspace
+
+# Install system dependencies for rendering and visualization
+RUN apt-get update && apt-get install -y \
+    ffmpeg \
+    libgl1-mesa-glx \
+    libglew-dev \
+    x11-xserver-utils \
+    xvfb \
+    wget \
+    git \
+    vim \
+    && rm -rf /var/lib/apt/lists/*
+
+# Copy repository
+COPY . .
+
+# Install JAX with CUDA 13 support
+RUN pip install --upgrade pip && \
+    pip install --root-user-action=ignore "jax[cuda13]" -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+# Install project dependencies
+RUN pip install --root-user-action=ignore -r requirements.txt
+
+# Set environment variables for GPU rendering
+ENV MUJOCO_GL=egl
+ENV XLA_PYTHON_CLIENT_PREALLOCATE=false
+
+CMD ["/bin/bash"]

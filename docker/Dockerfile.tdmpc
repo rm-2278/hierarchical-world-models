@@ -1,6 +1,6 @@
 # TDMPC2 Docker Image
-# Uses PyTorch base image with CUDA 12.4 support for modern GPUs
-FROM pytorch/pytorch:2.5.1-cuda12.4-cudnn9-devel
+# Uses PyTorch base image with CUDA 13.0 support for modern GPUs
+FROM pytorch/pytorch:2.9.1-cuda13.0-cudnn9-runtime
 
 WORKDIR /workspace
 

@@ -1,4 +1,4 @@
-# from repo root
+<!-- # from repo root
 docker build -t hwm-smoke -f docker/Dockerfile .
 
 docker run --rm -v "$PWD":/workspace -w /workspace hwm-smoke \
@@ -10,8 +10,14 @@ docker run --rm --gpus all -v "$PWD":/workspace -w /workspace hwm-smoke \
   bash -lc 'RUN_GPU_SMOKE=1 pytest -q experiments/tests/test_dreamerv3_gpu.py -s'
 
 
--> Successfully passed in 1.23s
+-> Successfully passed in 1.23s -->
 
 # Using docker-compose.yaml
 docker compose build dreamer
-docker compose run --rm dreamer bash -lc "pytest -q [test_dreamerv3.py](http://_vscodecontentref_/3) -s"
+docker compose run --rm \
+  -e RUN_GPU_SMOKE=1 \
+  -e NVIDIA_VISIBLE_DEVICES=all \
+  -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+  dreamer bash -lc "pytest -q experiments/tests/test_dreamerv3_gpu.py -s"
+
+-> Successfully passed in 1.14s

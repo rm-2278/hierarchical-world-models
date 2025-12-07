@@ -54,31 +54,48 @@ def test_dreamerv3_imports():
 def test_buffer_patches():
     """Test that torch.nn.Buffer patches are applied"""
     print("\nTesting torch.nn.Buffer patches...")
+    all_good = True
+    
     try:
         tdmpc2_scale = project_root / "third_party" / "tdmpc2" / "tdmpc2" / "common" / "scale.py"
         tdmpc2_main = project_root / "third_party" / "tdmpc2" / "tdmpc2" / "tdmpc2.py"
         
         if tdmpc2_scale.exists():
             content = tdmpc2_scale.read_text()
-            if "from torch.nn import Buffer" in content and "register_buffer" not in content:
-                print(f"  ✗ Buffer patch needed in {tdmpc2_scale}")
+            
+            # Check if old Buffer import exists
+            if "from torch.nn import Buffer" in content:
+                print(f"  ✗ Old Buffer import found in {tdmpc2_scale}")
                 print("  Run: sed -i 's/from torch.nn import Buffer/# Buffer removed in PyTorch 2.0+/' third_party/tdmpc2/tdmpc2/common/scale.py")
+                all_good = False
+            else:
+                print(f"  ✓ Buffer import removed from scale.py")
+            
+            # Check if Buffer usage is patched
+            if "= Buffer(" in content:
+                print(f"  ✗ Unpatched Buffer usage in {tdmpc2_scale}")
                 print("  Run: sed -i 's/self.value = Buffer(/self.register_buffer(\"value\", /' third_party/tdmpc2/tdmpc2/common/scale.py")
                 print("  Run: sed -i 's/self._percentiles = Buffer(/self.register_buffer(\"_percentiles\", /' third_party/tdmpc2/tdmpc2/common/scale.py")
-                return False
+                all_good = False
+            elif "register_buffer(" in content:
+                print(f"  ✓ Buffer usage patched in scale.py")
             else:
-                print(f"  ✓ scale.py is compatible")
+                print(f"  ⚠ No Buffer usage detected in scale.py")
         
         if tdmpc2_main.exists():
             content = tdmpc2_main.read_text()
-            if "torch.nn.Buffer" in content and "register_buffer" not in content:
-                print(f"  ✗ Buffer patch needed in {tdmpc2_main}")
+            
+            # Check if torch.nn.Buffer usage is patched
+            if "torch.nn.Buffer(" in content:
+                print(f"  ✗ Unpatched Buffer usage in {tdmpc2_main}")
                 print("  Run: sed -i 's/self._prev_mean = torch.nn.Buffer(/self.register_buffer(\"_prev_mean\", /' third_party/tdmpc2/tdmpc2/tdmpc2.py")
-                return False
+                all_good = False
+            elif "register_buffer(" in content and "_prev_mean" in content:
+                print(f"  ✓ Buffer usage patched in tdmpc2.py")
             else:
-                print(f"  ✓ tdmpc2.py is compatible")
+                print(f"  ⚠ No _prev_mean Buffer usage detected in tdmpc2.py")
         
-        return True
+        return all_good
     except Exception as e:
         print(f"  ✗ Patch check failed: {e}")
         return False

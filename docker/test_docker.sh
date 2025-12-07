@@ -4,6 +4,19 @@
 
 set -e  # Exit on error
 
+# Cleanup function
+cleanup() {
+    if [ -n "$BUILD_LOG_TDMPC" ] && [ -f "$BUILD_LOG_TDMPC" ]; then
+        rm -f "$BUILD_LOG_TDMPC"
+    fi
+    if [ -n "$BUILD_LOG_DREAMER" ] && [ -f "$BUILD_LOG_DREAMER" ]; then
+        rm -f "$BUILD_LOG_DREAMER"
+    fi
+}
+
+# Set up trap to cleanup on exit
+trap cleanup EXIT
+
 echo "========================================="
 echo "Docker Build and Test Script"
 echo "========================================="
@@ -53,10 +66,11 @@ print_info "Building TDMPC2 image..."
 BUILD_LOG_TDMPC=$(mktemp)
 if docker build -f docker/Dockerfile.tdmpc -t hwm-tdmpc:test . > "$BUILD_LOG_TDMPC" 2>&1; then
     print_status "TDMPC2 image built successfully"
-    rm -f "$BUILD_LOG_TDMPC"
 else
     print_error "Failed to build TDMPC2 image. Check $BUILD_LOG_TDMPC for details"
     tail -50 "$BUILD_LOG_TDMPC"
+    # Don't remove log on failure so user can inspect it
+    trap - EXIT  # Disable cleanup trap
     exit 1
 fi
 
@@ -65,10 +79,11 @@ print_info "Building DreamerV3 image..."
 BUILD_LOG_DREAMER=$(mktemp)
 if docker build -f docker/Dockerfile.dreamer -t hwm-dreamer:test . > "$BUILD_LOG_DREAMER" 2>&1; then
     print_status "DreamerV3 image built successfully"
-    rm -f "$BUILD_LOG_DREAMER"
 else
     print_error "Failed to build DreamerV3 image. Check $BUILD_LOG_DREAMER for details"
     tail -50 "$BUILD_LOG_DREAMER"
+    # Don't remove log on failure so user can inspect it
+    trap - EXIT  # Disable cleanup trap
     exit 1
 fi
 

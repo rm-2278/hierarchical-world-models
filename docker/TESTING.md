@@ -127,6 +127,23 @@ cfg = SimpleNamespace(
     mpc=False,
     lr=1e-3,
     enc_lr_scale=1.0,
+    episodic=False,
+    multitask=False,
+    tasks=[],
+    discount_denom=5,
+    discount_min=0.95,
+    discount_max=0.995,
+    episode_length=5,
+    episode_lengths=[5],
+    tau=0.01,
+    rho=0.5,
+    reward_coef=1.0,
+    value_coef=1.0,
+    termination_coef=1.0,
+    consistency_coef=1.0,
+    entropy_coef=1e-4,
+    grad_clip_norm=10.0,
+    compile=False,
 )
 
 # Import and create agent

@@ -1,0 +1,24 @@
+# Switch to NVIDIA NGC base image
+# This comes with PyTorch pre-compiled for the latest architectures (sm_120)
+FROM nvcr.io/nvidia/pytorch:25.11-py3
+
+WORKDIR /workspace
+
+COPY . .
+
+# CRITICAL: Prevent pip from downgrading PyTorch.
+# The NGC image already has the perfect version of torch installed.
+# We remove 'torch', 'torchvision', etc. from requirements.txt before installing.
+RUN sed -i '/torch/d' requirements.txt && \
+    pip install --upgrade pip && \
+    pip install --root-user-action=ignore -r requirements.txt
+
+# Install CUDA-enabled JAX so the Dreamer GPU smoke test can run
+RUN pip install --root-user-action=ignore -U "jax[cuda12]" \
+    -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+# Patch legacy Buffer usages (still needed for TDMPC2 compatibility)
+RUN sed -i 's/from torch.nn import Buffer/Buffer = torch.nn.Parameter/' third_party/tdmpc2/tdmpc2/common/scale.py && \
+    sed -i 's/self._prev_mean = torch.nn.Buffer(/self.register_buffer("_prev_mean", /' third_party/tdmpc2/tdmpc2/tdmpc2.py
+
+CMD ["/bin/bash"]

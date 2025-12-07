@@ -1,0 +1,14 @@
+# HWM modern stack (CUDA 13.x) for new research
+FROM pytorch/pytorch:2.9.1-cuda13.0-cudnn9-runtime
+
+WORKDIR /workspace
+
+COPY . .
+
+RUN pip install --upgrade pip && \
+    pip install --root-user-action=ignore -r requirements.txt && \
+    pip install --root-user-action=ignore \
+      "jax[cuda13]" \
+      -f https://storage.googleapis.com/jax-releases/jax_cuda_releases.html
+
+CMD ["/bin/bash"]

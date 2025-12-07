@@ -11,3 +11,7 @@ docker run --rm --gpus all -v "$PWD":/workspace -w /workspace hwm-smoke \
 
 
 -> Successfully passed in 1.23s
+
+# Using docker-compose.yaml
+docker compose build dreamer
+docker compose run --rm dreamer bash -lc "pytest -q [test_dreamerv3.py](http://_vscodecontentref_/3) -s"

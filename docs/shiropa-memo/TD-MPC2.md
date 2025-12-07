@@ -1,7 +1,7 @@
 # repo rootから実行
 docker build -t hwm-smoke -f docker/Dockerfile .
 
-(3分程度かかる)
+(最初に作る場合、3分程度かかる)
 
 docker run --rm -v "$PWD":/workspace -w /workspace hwm-smoke \
   bash -lc "pytest -q experiments/tests/test_tdmpc2.py"
@@ -10,4 +10,12 @@ docker run --rm -v "$PWD":/workspace -w /workspace hwm-smoke \
 docker run --rm --gpus all -v "$PWD":/workspace -w /workspace hwm-smoke \
   bash -lc 'RUN_GPU_SMOKE=1 pytest -q experiments/tests/test_tdmpc2_gpu.py -s'
 
--> Successfully passed in 1.76s
+-> Successfully passed in 3.07s
+
+
+# Using docker-compose.yaml
+docker compose build tdmpc
+docker compose run --rm \
+  -e NVIDIA_VISIBLE_DEVICES=all \
+  -e NVIDIA_DRIVER_CAPABILITIES=compute,utility \
+  tdmpc bash -lc 'RUN_GPU_SMOKE=1 pytest -q experiments/tests/test_tdmpc2_gpu.py -s'

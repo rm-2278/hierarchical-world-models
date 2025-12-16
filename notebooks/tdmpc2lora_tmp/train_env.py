@@ -57,7 +57,8 @@ class SimpleReacherEnv(gym.Env):
 
     def _get_obs(self):
         return np.concatenate([
-            np.cos(self.angles), np.sin(self.angles),
+            np.cos(self.angles), 
+            np.sin(self.angles),
             self.velocities, 
             self.target
         ]).astype(np.float32)

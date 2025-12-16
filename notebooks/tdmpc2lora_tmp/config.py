@@ -14,7 +14,7 @@ class Config:
         self.batch_size = 256
         self.lr = 1e-3            
         self.grad_clip_norm = 10
-        self.tau = 0.01
+        self.tau = 0.01             # Target Q Network の EMA 更新率
         self.rho = 0.5
         self.consistency_coef = 1
         self.reward_coef = 0.1
@@ -29,8 +29,14 @@ class Config:
         self.num_q = 2
         self.dropout = 0.0
         self.simnorm_dim = 4
-        self.lora_rank = 0 
+        self.simnorm_temp = 0.1   # <--- 追加: SimNormの温度
 
+        # LoRA & Multi-Task
+        self.lora_rank = 0 
+        self.num_tasks = 1        # <--- 追加: LoRAのバンク数 (実験スクリプトで4等に上書きするが、初期値として必要)
+        self.task_dim = 32        # <--- 追加: Task Embeddingの次元
+        self.task_id = 0          # <--- 追加: 現在のタスクID
+        
         # MPC
         self.mpc = True
         self.horizon = 10         
@@ -40,7 +46,7 @@ class Config:
         self.num_pi_trajs = 16
         self.min_std = 0.1
         self.max_std = 1.0
-        self.temperature = 0.5
+        self.temperature = 0.5      # MPPIの更新温度
 
         # Value
         self.log_std_min = -5

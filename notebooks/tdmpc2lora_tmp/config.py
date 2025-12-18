@@ -9,23 +9,25 @@ class Config:
         self.seed = 1
 
         # Hyperparams
-        self.steps = 5000
-        # self.steps = 20000        
-        self.batch_size = 256
+        # self.steps = 5000
+        self.steps = 30000        
+        self.batch_size = 128
         self.lr = 1e-3            
         self.grad_clip_norm = 10
         self.tau = 0.01             # Target Q Network の EMA 更新率
-        self.rho = 0.5
+        self.rho = 0.9
+        # self.rho = 0.5
         self.consistency_coef = 1
-        self.reward_coef = 0.1
-        self.value_coef = 0.1
+        self.reward_coef = 10.0
+        # self.reward_coef = 0.5
+        self.value_coef = 0.5
         self.termination_coef = 0 
         self.entropy_coef = 1e-4
 
         # Architecture
         self.latent_dim = 32      
-        self.mlp_dim = 64
-        self.enc_dim = 64
+        self.mlp_dim = 256
+        self.enc_dim = 256
         self.num_q = 2
         self.dropout = 0.0
         self.simnorm_dim = 4
@@ -39,12 +41,13 @@ class Config:
         
         # MPC
         self.mpc = True
-        self.horizon = 10         
-        self.iterations = 4
+        self.horizon = 40 # 2.0 s 先まで
+        self.iterations = 6
+        # self.iterations = 4
         self.num_samples = 256
         self.num_elites = 32
         self.num_pi_trajs = 16
-        self.min_std = 0.1
+        self.min_std = 0.05
         self.max_std = 1.0
         self.temperature = 0.5      # MPPIの更新温度
 
@@ -52,7 +55,7 @@ class Config:
         self.log_std_min = -5
         self.log_std_max = 2
         self.num_bins = 51        
-        self.vmin = -100
+        self.vmin = -1.0
         self.vmax = 0             
         self.bin_size = (self.vmax - self.vmin) / (self.num_bins - 1)
 

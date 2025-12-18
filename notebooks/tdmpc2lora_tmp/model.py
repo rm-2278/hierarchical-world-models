@@ -189,11 +189,13 @@ class WorldModel(nn.Module):
 
         # 各コンポーネント
         self._encoder_mlp = mlp(cfg.obs_shape, [cfg.enc_dim], cfg.latent_dim, cfg)
-        self._encoder_simnorm = SimNorm(cfg)
+        # self._encoder_simnorm = SimNorm(cfg)
+        self._encoder_simnorm = nn.LayerNorm(cfg.latent_dim)
         
         self._dynamics_mlp = mlp(cfg.latent_dim + cfg.action_dim + cfg.task_dim, 
                                  [cfg.mlp_dim, cfg.mlp_dim], cfg.latent_dim, cfg)
-        self._dynamics_simnorm = SimNorm(cfg)
+        # self._dynamics_simnorm = SimNorm(cfg)
+        self._dynamics_simnorm = nn.LayerNorm(cfg.latent_dim)
         
         self._reward = mlp(cfg.latent_dim + cfg.action_dim + cfg.task_dim, 
                            [cfg.mlp_dim, cfg.mlp_dim], max(cfg.num_bins, 1), cfg)
